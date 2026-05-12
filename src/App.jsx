@@ -3,7 +3,7 @@ import { Dashboard } from '@/pages/Dashboard'
 
 function ShellLayout() {
   return (
-    <div className="min-h-svh bg-background text-foreground">
+    <div className="min-h-dvh min-h-svh bg-background text-foreground">
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />

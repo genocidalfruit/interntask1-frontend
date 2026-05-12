@@ -224,11 +224,20 @@ export function AssetForm({ open, onOpenChange, editAsset = null }) {
               <p className="text-xs text-destructive">{errors.assetCost.message}</p>
             )}
           </div>
-          <DialogFooter className="gap-2 sm:gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="gap-2 pt-4 sm:flex-row sm:justify-end sm:gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full touch-manipulation sm:w-auto"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || mutation.isPending}>
+            <Button
+              type="submit"
+              className="w-full touch-manipulation sm:w-auto"
+              disabled={isSubmitting || mutation.isPending}
+            >
               {mutation.isPending ? 'Saving…' : isEditMode ? 'Update asset' : 'Create asset'}
             </Button>
           </DialogFooter>

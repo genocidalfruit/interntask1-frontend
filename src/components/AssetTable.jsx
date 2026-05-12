@@ -176,15 +176,15 @@ export function AssetTable({ assets, loading, error }) {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-3 sm:space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="flex w-full max-w-md gap-2">
+        <div className="flex w-full flex-1 flex-col gap-2 sm:max-w-xl sm:flex-row sm:items-center">
+          <div className="flex w-full gap-2 sm:max-w-md">
             <Input
               placeholder="Search by name or serial…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-              className="min-w-0 flex-1"
+              className="min-w-0 flex-1 touch-manipulation"
               aria-label="Search assets"
             />
             <Popover>
@@ -194,7 +194,7 @@ export function AssetTable({ assets, loading, error }) {
                   variant="outline"
                   size="icon"
                   className={cn(
-                    'shrink-0',
+                    'shrink-0 touch-manipulation',
                     filtersActive && 'border-primary/80 text-primary',
                   )}
                   aria-label="Filter by category, criticality, or team"
@@ -202,7 +202,7 @@ export function AssetTable({ assets, loading, error }) {
                   <Filter className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="panel-glow w-72 border-border font-mono">
+              <PopoverContent align="start" className="panel-glow border-border font-mono">
                 <div className="space-y-3">
                   <p className="text-sm font-semibold leading-none">Filters</p>
                   <div className="space-y-2">
@@ -213,7 +213,7 @@ export function AssetTable({ assets, loading, error }) {
                       value={filterCategory}
                       onValueChange={(v) => { setFilterCategory(v); setPage(1) }}
                     >
-                      <SelectTrigger id="filter-category" className="h-9">
+                      <SelectTrigger id="filter-category">
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -233,7 +233,7 @@ export function AssetTable({ assets, loading, error }) {
                       value={filterCriticality}
                       onValueChange={(v) => { setFilterCriticality(v); setPage(1) }}
                     >
-                      <SelectTrigger id="filter-criticality" className="h-9">
+                      <SelectTrigger id="filter-criticality">
                         <SelectValue placeholder="Criticality" />
                       </SelectTrigger>
                       <SelectContent>
@@ -252,7 +252,7 @@ export function AssetTable({ assets, loading, error }) {
                       value={filterTeam}
                       onValueChange={(v) => { setFilterTeam(v); setPage(1) }}
                     >
-                      <SelectTrigger id="filter-team" className="h-9">
+                      <SelectTrigger id="filter-team">
                         <SelectValue placeholder="Team" />
                       </SelectTrigger>
                       <SelectContent>
@@ -279,7 +279,10 @@ export function AssetTable({ assets, loading, error }) {
             </Popover>
           </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)} className="shrink-0">
+        <Button
+          onClick={() => setCreateOpen(true)}
+          className="h-11 w-full shrink-0 touch-manipulation sm:h-9 sm:w-auto"
+        >
           <Plus className="mr-1 h-4 w-4" />
           Add asset
         </Button>
@@ -288,11 +291,11 @@ export function AssetTable({ assets, loading, error }) {
       <div className="panel-glow rounded-lg bg-card">
         <div
           className={cn(
-            'overflow-x-auto transition-opacity duration-200',
+            '-mx-1 touch-pan-x overflow-x-auto overscroll-x-contain px-1 transition-opacity duration-200 [-webkit-overflow-scrolling:touch] sm:mx-0 sm:px-0',
             filterRefreshing && 'opacity-50',
           )}
         >
-          <Table className="font-mono">
+          <Table className="min-w-[44rem] font-mono xl:min-w-0">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-center">Asset name</TableHead>
@@ -303,7 +306,11 @@ export function AssetTable({ assets, loading, error }) {
                 <TableHead className="text-center">Rating
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="ml-1 align-middle" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="ml-1 inline-flex min-h-10 min-w-10 items-center justify-center rounded-md align-middle touch-manipulation active:bg-muted sm:min-h-0 sm:min-w-0 sm:p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {sortBy === 'rating' ? (
                           sortDir === 'asc' ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
                         ) : (
@@ -324,7 +331,11 @@ export function AssetTable({ assets, loading, error }) {
                 <TableHead className="text-center">Cost
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="ml-1 align-middle" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="ml-1 inline-flex min-h-10 min-w-10 items-center justify-center rounded-md align-middle touch-manipulation active:bg-muted sm:min-h-0 sm:min-w-0 sm:p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {sortBy === 'cost' ? (
                           sortDir === 'asc' ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
                         ) : (
@@ -342,7 +353,9 @@ export function AssetTable({ assets, loading, error }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableHead>
-                <TableHead className="w-[110px] text-center pr-4">Actions</TableHead>
+                <TableHead className="w-[7.5rem] min-w-[7.5rem] text-center sm:w-[110px] sm:min-w-0">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody
@@ -355,7 +368,11 @@ export function AssetTable({ assets, loading, error }) {
               {showBodySkeleton && <TableSkeletonRows rows={PAGE_SIZE} />}
               {!showBodySkeleton &&
                 paginated.map((a) => (
-                  <TableRow key={a._id} className="cursor-pointer" onClick={() => setDetailAsset(a)}>
+                  <TableRow
+                    key={a._id}
+                    className="cursor-pointer touch-manipulation active:bg-muted/60"
+                    onClick={() => setDetailAsset(a)}
+                  >
                     <TableCell className="text-center font-medium">{a.assetName}</TableCell>
                     <TableCell className="text-center">{a.serialNumber}</TableCell>
                     <TableCell className="text-center">{a.assetCategory}</TableCell>
@@ -393,23 +410,25 @@ export function AssetTable({ assets, loading, error }) {
       </div>
 
       {!loading && !filterRefreshing && filtered.length > PAGE_SIZE && (
-        <div className="flex items-center justify-between px-4 font-mono text-sm">
-          <span className="pl-2 text-muted-foreground">
+        <div className="flex flex-col gap-3 px-2 font-mono text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4">
+          <span className="text-center text-muted-foreground sm:pl-2 sm:text-left">
             Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-center gap-2">
             <Button
               variant="outline"
               size="icon"
+              className="touch-manipulation"
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="px-2 text-muted-foreground">{page} / {totalPages}</span>
+            <span className="min-w-[4.5rem] text-center text-muted-foreground">{page} / {totalPages}</span>
             <Button
               variant="outline"
               size="icon"
+              className="touch-manipulation"
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
             >

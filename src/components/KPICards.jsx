@@ -1,9 +1,7 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { DollarSign, Boxes, AlertTriangle, Layers } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
-
 function formatCurrency(value) {
   return new Intl.NumberFormat(undefined, {
     style: 'currency',
@@ -49,21 +47,20 @@ const KPI_SUBTITLE_MESSAGES = [
 ]
 
 export function KPICards({ loading, kpis }) {
-  const subtitle = useMemo(
+  const [subtitle] = useState(
     () =>
       KPI_SUBTITLE_MESSAGES[Math.floor(Math.random() * KPI_SUBTITLE_MESSAGES.length)],
-    [],
   )
 
   if (loading) {
     return (
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
         <Card className="panel-glow border-border">
           <CardContent className="flex h-36 items-center justify-center">
             <Skeleton className="h-5 w-48" />
           </CardContent>
         </Card>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
           {items.map((item) => (
             <Card key={item.key} className="panel-glow overflow-hidden border-border">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -89,14 +86,16 @@ export function KPICards({ loading, kpis }) {
   }
 
   return (
-<div className="grid gap-4 lg:grid-cols-2">
-        <div>
-          <CardContent className="flex h-36 flex-col items-start justify-start gap-2">
-            <p className="font-mono text-6xl font-semibold tracking-tight text-foreground pt-12">Welcome!</p>
-            <p className="font-mono text-sm text-muted-foreground">{subtitle}</p>
+    <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+        <div className="min-w-0">
+          <CardContent className="flex min-h-[9rem] flex-col items-start justify-end gap-2 px-1 pb-4 pt-6 sm:h-36 sm:justify-start sm:pt-12">
+            <p className="font-mono text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+              Welcome!
+            </p>
+            <p className="font-mono text-xs leading-snug text-muted-foreground sm:text-sm">{subtitle}</p>
           </CardContent>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
         {items.map((item) => {
           const Icon = item.icon
           return (
@@ -109,7 +108,7 @@ export function KPICards({ loading, kpis }) {
                 <Icon className="h-4 w-4 text-primary" aria-hidden />
               </CardHeader>
               <CardContent>
-                <p className="font-mono text-3xl font-semibold tracking-tight text-foreground">
+                <p className="font-mono text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                   {item.format(values[item.key])}
                 </p>
               </CardContent>

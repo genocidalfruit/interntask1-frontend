@@ -1,7 +1,18 @@
 import { Toaster as Sonner } from 'sonner'
 import { useTheme } from '@/lib/theme'
+import { useMaxWidth } from '@/lib/useMediaQuery'
 
 export function Toaster() {
   const { theme } = useTheme()
-  return <Sonner theme={theme} richColors closeButton position="top-right" />
+  const narrow = useMaxWidth(639)
+  return (
+    <Sonner
+      theme={theme}
+      richColors
+      closeButton
+      position={narrow ? 'top-center' : 'top-right'}
+      offset={narrow ? 'max(1rem, env(safe-area-inset-top))' : '1rem'}
+      toastOptions={{ className: 'touch-manipulation' }}
+    />
+  )
 }

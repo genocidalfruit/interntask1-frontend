@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 
 function Table({ className, ...props }) {
   return (
-    <div className="relative w-full overflow-auto">
+    <div className="relative w-full min-w-0 touch-pan-x">
       <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
     </div>
   )
@@ -41,7 +41,7 @@ function TableHead({ className, ...props }) {
   return (
     <th
       className={cn(
-        'h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'h-12 px-2 py-2 text-left align-middle text-xs font-medium text-muted-foreground sm:h-10 sm:px-2 sm:py-0 sm:text-sm [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className,
       )}
       {...props}
@@ -53,7 +53,7 @@ function TableCell({ className, ...props }) {
   return (
     <td
       className={cn(
-        'p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'p-2 py-3 align-middle text-xs sm:py-2 sm:text-sm [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
         className,
       )}
       {...props}

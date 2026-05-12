@@ -21,9 +21,9 @@ export function Dashboard() {
   }, [assets])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 min-h-dvh flex-1 flex-col">
       <Topbar title="Dashboard" />
-      <main className="flex-1 space-y-8 overflow-auto p-4 md:p-6">
+      <main className="flex-1 space-y-6 overflow-auto p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:space-y-8 sm:p-4 md:p-6">
         <KPICards loading={isPending} kpis={kpis} />
         <Charts assets={assets} />
         <AssetTable assets={assets} loading={isPending} error={isError ? error : null} />

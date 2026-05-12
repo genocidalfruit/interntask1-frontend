@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useMaxWidth } from '@/lib/useMediaQuery'
 import {
   ResponsiveContainer,
   PieChart,
@@ -18,10 +19,10 @@ const EMERALD = ['#059669', '#10b981', '#047857', '#34d399', '#6ee7b7', '#065f46
 function ChartCard({ title, children, className = '' }) {
   return (
     <div
-      className={`panel-glow flex min-h-[280px] flex-col rounded-lg bg-card p-4 ${className}`}
+      className={`panel-glow flex min-h-[260px] flex-col rounded-lg bg-card p-3 sm:min-h-[280px] sm:p-4 ${className}`}
     >
       <h3 className="mb-2 font-mono text-sm font-semibold text-foreground">{title}</h3>
-      <div className="min-h-[220px] flex-1">{children}</div>
+      <div className="min-h-[200px] flex-1 sm:min-h-[220px]">{children}</div>
     </div>
   )
 }
@@ -42,6 +43,8 @@ const currency = (v) =>
   }).format(v)
 
 export function Charts({ assets }) {
+  const narrow = useMaxWidth(639)
+
   const pieData = useMemo(() => {
     const map = new Map()
     for (const a of assets) {
@@ -74,16 +77,28 @@ export function Charts({ assets }) {
       }))
   }, [assets])
 
+  const pieInner = narrow ? 38 : 52
+  const pieOuter = narrow ? 58 : 80
+
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
       <ChartCard title="Assets by category">
         {pieData.length === 0 ? (
           <EmptyChart />
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={narrow ? 220 : 240}>
             <PieChart>
               <Legend
-                wrapperStyle={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-foreground)', backgroundColor: 'var(--color-muted)', padding: '4px 8px', borderRadius: '6px' }}
+                verticalAlign="bottom"
+                height={narrow ? 48 : 36}
+                wrapperStyle={{
+                  fontSize: narrow ? '10px' : '11px',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--color-foreground)',
+                  backgroundColor: 'var(--color-muted)',
+                  padding: '6px 8px',
+                  borderRadius: '6px',
+                }}
               />
               <Tooltip
                 formatter={(value, name) => [value, name]}
@@ -101,8 +116,8 @@ export function Charts({ assets }) {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={52}
-                outerRadius={80}
+                innerRadius={pieInner}
+                outerRadius={pieOuter}
                 paddingAngle={2}
               >
                 {pieData.map((_, i) => (
@@ -118,15 +133,19 @@ export function Charts({ assets }) {
         {teamData.length === 0 ? (
           <EmptyChart />
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart layout="vertical" data={teamData} margin={{ left: 8, right: 16 }}>
+          <ResponsiveContainer width="100%" height={narrow ? 220 : 240}>
+            <BarChart
+              layout="vertical"
+              data={teamData}
+              margin={{ left: narrow ? 4 : 8, right: narrow ? 8 : 16 }}
+            >
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-              <XAxis type="number" tick={{ fill: 'var(--color-muted-foreground)', fontSize: 11 }} />
+              <XAxis type="number" tick={{ fill: 'var(--color-muted-foreground)', fontSize: narrow ? 10 : 11 }} />
               <YAxis
                 type="category"
                 dataKey="name"
-                width={72}
-                tick={{ fill: 'var(--color-muted-foreground)', fontSize: 11 }}
+                width={narrow ? 58 : 72}
+                tick={{ fill: 'var(--color-muted-foreground)', fontSize: narrow ? 10 : 11 }}
               />
               <Tooltip
                 formatter={(v) => [v, 'Assets']}
