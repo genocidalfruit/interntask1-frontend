@@ -1,24 +1,15 @@
-import { Link } from 'react-router-dom'
-import { ChevronRight, Menu, Moon, Sun } from 'lucide-react'
+import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/lib/theme'
-import { MobileNav } from '@/components/Sidebar'
 
 export function Topbar({ title = 'Dashboard' }) {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex items-center md:hidden">
-        <MobileNav>
-          <Button variant="ghost" size="icon" aria-label="Open menu">
-            <Menu className="h-5 w-5" />
-          </Button>
-        </MobileNav>
-      </div>
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <h1 className="truncate font-mono text-lg font-semibold tracking-tight text-foreground">
-          {title}
+          DASHBOARD //
         </h1>
       </div>
       <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">

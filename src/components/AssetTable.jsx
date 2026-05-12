@@ -1,8 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Trash2, ChevronLeft, ChevronRight, Plus, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react'
+import {
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
+  Filter,
+} from 'lucide-react'
 import { deleteAsset, ApiError } from '@/lib/api'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +46,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AssetForm, EditAssetButton } from '@/components/AssetForm'
 import { AssetDetail } from '@/components/AssetDetail'
@@ -57,7 +69,9 @@ function CriticalityBadge({ value }) {
 export function AssetTable({ assets, loading, error }) {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
-  const [team, setTeam] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [filterCriticality, setFilterCriticality] = useState('all')
+  const [filterTeam, setFilterTeam] = useState('all')
   const [createOpen, setCreateOpen] = useState(false)
   const [editAsset, setEditAsset] = useState(null)
   const [detailAsset, setDetailAsset] = useState(null)
@@ -67,11 +81,22 @@ export function AssetTable({ assets, loading, error }) {
   const [sortBy, setSortBy] = useState(null)
   const [sortDir, setSortDir] = useState('asc')
 
+  const filtersActive =
+    filterCategory !== 'all' || filterCriticality !== 'all' || filterTeam !== 'all'
+
+  const clearFilters = () => {
+    setFilterCategory('all')
+    setFilterCriticality('all')
+    setFilterTeam('all')
+    setPage(1)
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     let result = assets.filter((a) => {
-      const matchTeam = team === 'all' || a.responsibleTeam === team
-      if (!matchTeam) return false
+      if (filterCategory !== 'all' && a.assetCategory !== filterCategory) return false
+      if (filterCriticality !== 'all' && a.assetCriticality !== filterCriticality) return false
+      if (filterTeam !== 'all' && a.responsibleTeam !== filterTeam) return false
       if (!q) return true
       const name = (a.assetName || '').toLowerCase()
       const serial = (a.serialNumber || '').toLowerCase()
@@ -87,7 +112,7 @@ export function AssetTable({ assets, loading, error }) {
       })
     }
     return result
-  }, [assets, search, team, sortBy, sortDir])
+  }, [assets, search, filterCategory, filterCriticality, filterTeam, sortBy, sortDir])
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
   const paginated = useMemo(() => {
@@ -119,24 +144,105 @@ export function AssetTable({ assets, loading, error }) {
     <section className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-          <Input
-            placeholder="Search by name or serial…"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="max-w-md"
-            aria-label="Search assets"
-          />
-          <Select value={team} onValueChange={(v) => { setTeam(v); setPage(1) }}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Team" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All teams</SelectItem>
-              <SelectItem value="HVAC">HVAC</SelectItem>
-              <SelectItem value="Plumbing">Plumbing</SelectItem>
-              <SelectItem value="Electrical">Electrical</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex w-full max-w-md gap-2">
+            <Input
+              placeholder="Search by name or serial…"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              className="min-w-0 flex-1"
+              aria-label="Search assets"
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className={cn(
+                    'shrink-0',
+                    filtersActive && 'border-primary/80 text-primary',
+                  )}
+                  aria-label="Filter by category, criticality, or team"
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="panel-glow w-72 border-border font-mono">
+                <div className="space-y-3">
+                  <p className="text-sm font-semibold leading-none">Filters</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-category" className="text-xs text-muted-foreground">
+                      Category
+                    </Label>
+                    <Select
+                      value={filterCategory}
+                      onValueChange={(v) => { setFilterCategory(v); setPage(1) }}
+                    >
+                      <SelectTrigger id="filter-category" className="h-9">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All categories</SelectItem>
+                        <SelectItem value="Chiller">Chiller</SelectItem>
+                        <SelectItem value="Pumps">Pumps</SelectItem>
+                        <SelectItem value="AHU">AHU</SelectItem>
+                        <SelectItem value="Cooling Tower">Cooling Tower</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-criticality" className="text-xs text-muted-foreground">
+                      Criticality
+                    </Label>
+                    <Select
+                      value={filterCriticality}
+                      onValueChange={(v) => { setFilterCriticality(v); setPage(1) }}
+                    >
+                      <SelectTrigger id="filter-criticality" className="h-9">
+                        <SelectValue placeholder="Criticality" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All levels</SelectItem>
+                        <SelectItem value="High">High</SelectItem>
+                        <SelectItem value="Medium">Medium</SelectItem>
+                        <SelectItem value="Low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-team" className="text-xs text-muted-foreground">
+                      Team
+                    </Label>
+                    <Select
+                      value={filterTeam}
+                      onValueChange={(v) => { setFilterTeam(v); setPage(1) }}
+                    >
+                      <SelectTrigger id="filter-team" className="h-9">
+                        <SelectValue placeholder="Team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All teams</SelectItem>
+                        <SelectItem value="HVAC">HVAC</SelectItem>
+                        <SelectItem value="Plumbing">Plumbing</SelectItem>
+                        <SelectItem value="Electrical">Electrical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {filtersActive && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-full text-xs"
+                      onClick={clearFilters}
+                    >
+                      Clear filters
+                    </Button>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="shrink-0">
           <Plus className="mr-1 h-4 w-4" />
