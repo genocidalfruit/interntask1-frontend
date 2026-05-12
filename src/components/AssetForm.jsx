@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { createAsset, ApiError } from '@/lib/api'
+import { Pencil } from 'lucide-react'
+import { createAsset, updateAsset, ApiError } from '@/lib/api'
 import {
   Dialog,
   DialogContent,
@@ -47,8 +48,10 @@ const defaults = {
   assetCost: '',
 }
 
-export function AssetForm({ open, onOpenChange }) {
+export function AssetForm({ open, onOpenChange, editAsset = null }) {
   const queryClient = useQueryClient()
+  const isEditMode = !!editAsset
+
   const {
     register,
     handleSubmit,
@@ -64,15 +67,33 @@ export function AssetForm({ open, onOpenChange }) {
 
   useEffect(() => {
     if (open) {
-      reset(defaults)
+      if (editAsset) {
+        reset({
+          assetName: editAsset.assetName || '',
+          serialNumber: editAsset.serialNumber || '',
+          assetCategory: editAsset.assetCategory || 'Chiller',
+          assetCriticality: editAsset.assetCriticality || 'Medium',
+          responsibleTeam: editAsset.responsibleTeam || 'HVAC',
+          assetRating: editAsset.assetRating || '',
+          assetCost: editAsset.assetCost?.toString() || '',
+        })
+      } else {
+        reset(defaults)
+      }
       clearErrors()
     }
-  }, [open, reset, clearErrors])
+  }, [open, editAsset, reset, clearErrors])
 
   const mutation = useMutation({
-    mutationFn: (data) => createAsset(data),
+    mutationFn: (data) => {
+      const payload = { ...data, assetCost: Number(data.assetCost) }
+      if (isEditMode) {
+        return updateAsset(editAsset._id, payload)
+      }
+      return createAsset(payload)
+    },
     onSuccess: () => {
-      toast.success('Asset created successfully')
+      toast.success(isEditMode ? 'Asset updated successfully' : 'Asset created successfully')
       reset(defaults)
       onOpenChange(false)
       queryClient.invalidateQueries({ queryKey: ['assets'] })
@@ -88,25 +109,24 @@ export function AssetForm({ open, onOpenChange }) {
           return
         }
       }
-      toast.error(err instanceof ApiError ? err.message : 'Failed to create asset')
+      toast.error(err instanceof ApiError ? err.message : 'Failed to save asset')
     },
   })
 
   const onSubmit = (data) => {
-    mutation.mutate({
-      ...data,
-      assetCost: Number(data.assetCost),
-    })
+    mutation.mutate(data)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="panel-glow max-h-[90vh] max-w-lg overflow-y-auto border-border sm:max-w-lg">
+      <DialogContent className="panel-glow max-h-[90vh] max-w-lg border-border font-mono overflow-y-auto sm:max-w-lg [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border">
         <DialogHeader>
-          <DialogTitle>Create asset</DialogTitle>
-          <DialogDescription>Add a new facility asset to the inventory.</DialogDescription>
+          <DialogTitle>{isEditMode ? 'Edit asset' : 'Create asset'}</DialogTitle>
+          <DialogDescription>
+            {isEditMode ? 'Update facility asset details.' : 'Add a new facility asset to the inventory.'}
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-3">
           <div className="space-y-2">
             <Label htmlFor="assetName">Asset name</Label>
             <Input id="assetName" {...register('assetName')} autoComplete="off" />
@@ -204,16 +224,30 @@ export function AssetForm({ open, onOpenChange }) {
               <p className="text-xs text-destructive">{errors.assetCost.message}</p>
             )}
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 sm:gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || mutation.isPending}>
-              {mutation.isPending ? 'Saving…' : 'Create asset'}
+              {mutation.isPending ? 'Saving…' : isEditMode ? 'Update asset' : 'Create asset'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+export function EditAssetButton({ asset, onOpenChange }) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      aria-label={`Edit ${asset.assetName}`}
+      onClick={(e) => { e.stopPropagation(); onOpenChange(asset) }}
+    >
+      <Pencil className="h-4 w-4" />
+    </Button>
   )
 }

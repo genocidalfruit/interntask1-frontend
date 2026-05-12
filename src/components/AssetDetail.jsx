@@ -44,7 +44,7 @@ export function AssetDetail({ asset, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="panel-glow max-h-[90vh] max-w-2xl overflow-y-auto border-border sm:max-w-2xl">
+      <DialogContent className="panel-glow max-h-[90vh] max-w-2xl overflow-y-auto border-border font-mono sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Asset details</DialogTitle>
           <DialogDescription>Read-only view of facility asset record.</DialogDescription>

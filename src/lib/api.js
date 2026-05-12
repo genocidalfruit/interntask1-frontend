@@ -66,3 +66,10 @@ export function deleteAsset(id) {
     method: 'DELETE',
   })
 }
+
+export function updateAsset(id, data) {
+  return request(`/api/assets/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}

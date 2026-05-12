@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Eye, Trash2 } from 'lucide-react'
+import { Trash2, ChevronLeft, ChevronRight, Plus, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { deleteAsset, ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -30,8 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AssetForm } from '@/components/AssetForm'
+import { AssetForm, EditAssetButton } from '@/components/AssetForm'
 import { AssetDetail } from '@/components/AssetDetail'
 
 function formatMoney(n) {
@@ -53,12 +59,17 @@ export function AssetTable({ assets, loading, error }) {
   const [search, setSearch] = useState('')
   const [team, setTeam] = useState('all')
   const [createOpen, setCreateOpen] = useState(false)
+  const [editAsset, setEditAsset] = useState(null)
   const [detailAsset, setDetailAsset] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 5
+  const [sortBy, setSortBy] = useState(null)
+  const [sortDir, setSortDir] = useState('asc')
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return assets.filter((a) => {
+    let result = assets.filter((a) => {
       const matchTeam = team === 'all' || a.responsibleTeam === team
       if (!matchTeam) return false
       if (!q) return true
@@ -66,7 +77,23 @@ export function AssetTable({ assets, loading, error }) {
       const serial = (a.serialNumber || '').toLowerCase()
       return name.includes(q) || serial.includes(q)
     })
-  }, [assets, search, team])
+    if (sortBy) {
+      result = [...result].sort((a, b) => {
+        const aVal = sortBy === 'cost' ? Number(a.assetCost) || 0 : (a.assetRating || '').toString()
+        const bVal = sortBy === 'cost' ? Number(b.assetCost) || 0 : (b.assetRating || '').toString()
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return result
+  }, [assets, search, team, sortBy, sortDir])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filtered.slice(start, start + PAGE_SIZE)
+  }, [filtered, page])
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteAsset(id),
@@ -82,7 +109,7 @@ export function AssetTable({ assets, loading, error }) {
 
   if (error) {
     return (
-      <div className="panel-glow rounded-lg border border-destructive/40 bg-card p-6 text-sm text-destructive">
+      <div className="panel-glow rounded-lg bg-card p-6 text-sm text-destructive">
         {error instanceof ApiError ? error.message : 'Could not load assets. Check API connection.'}
       </div>
     )
@@ -95,11 +122,11 @@ export function AssetTable({ assets, loading, error }) {
           <Input
             placeholder="Search by name or serial…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             className="max-w-md"
             aria-label="Search assets"
           />
-          <Select value={team} onValueChange={setTeam}>
+          <Select value={team} onValueChange={(v) => { setTeam(v); setPage(1) }}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Team" />
             </SelectTrigger>
@@ -112,23 +139,64 @@ export function AssetTable({ assets, loading, error }) {
           </Select>
         </div>
         <Button onClick={() => setCreateOpen(true)} className="shrink-0">
+          <Plus className="mr-1 h-4 w-4" />
           Add asset
         </Button>
       </div>
 
-      <div className="panel-glow rounded-lg border border-border bg-card">
+      <div className="panel-glow rounded-lg bg-card">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="font-mono">
             <TableHeader>
               <TableRow>
-                <TableHead>Asset name</TableHead>
-                <TableHead>Serial no.</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Criticality</TableHead>
-                <TableHead>Team</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="w-[140px] text-right">Actions</TableHead>
+                <TableHead className="text-center">Asset name</TableHead>
+                <TableHead className="text-center">Serial no.</TableHead>
+                <TableHead className="text-center">Category</TableHead>
+                <TableHead className="text-center">Criticality</TableHead>
+                <TableHead className="text-center">Team</TableHead>
+                <TableHead className="text-center">Rating
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="ml-1 align-middle" onClick={(e) => e.stopPropagation()}>
+                        {sortBy === 'rating' ? (
+                          sortDir === 'asc' ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center">
+                      <DropdownMenuItem onClick={() => { setSortBy('rating'); setSortDir('asc'); setPage(1) }}>
+                        <ArrowUp className="mr-1 h-3 w-3" /> Ascending
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setSortBy('rating'); setSortDir('desc'); setPage(1) }}>
+                        <ArrowDown className="mr-1 h-3 w-3" /> Descending
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableHead>
+                <TableHead className="text-center">Cost
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="ml-1 align-middle" onClick={(e) => e.stopPropagation()}>
+                        {sortBy === 'cost' ? (
+                          sortDir === 'asc' ? <ArrowUp className="h-3 w-3 text-primary" /> : <ArrowDown className="h-3 w-3 text-primary" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center">
+                      <DropdownMenuItem onClick={() => { setSortBy('cost'); setSortDir('asc'); setPage(1) }}>
+                        <ArrowUp className="mr-1 h-3 w-3" /> Ascending
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setSortBy('cost'); setSortDir('desc'); setPage(1) }}>
+                        <ArrowDown className="mr-1 h-3 w-3" /> Descending
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableHead>
+                <TableHead className="w-[110px] text-center pr-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,35 +211,27 @@ export function AssetTable({ assets, loading, error }) {
                   </TableRow>
                 ))}
               {!loading &&
-                filtered.map((a) => (
-                  <TableRow key={a._id}>
-                    <TableCell className="font-medium">{a.assetName}</TableCell>
-                    <TableCell className="font-mono text-xs">{a.serialNumber}</TableCell>
-                    <TableCell>{a.assetCategory}</TableCell>
-                    <TableCell>
+                paginated.map((a) => (
+                  <TableRow key={a._id} className="cursor-pointer" onClick={() => setDetailAsset(a)}>
+                    <TableCell className="text-center font-medium">{a.assetName}</TableCell>
+                    <TableCell className="text-center">{a.serialNumber}</TableCell>
+                    <TableCell className="text-center">{a.assetCategory}</TableCell>
+                    <TableCell className="text-center">
                       <CriticalityBadge value={a.assetCriticality} />
                     </TableCell>
-                    <TableCell>{a.responsibleTeam}</TableCell>
-                    <TableCell className="font-mono text-xs">{a.assetRating}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">{formatMoney(a.assetCost)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setDetailAsset(a)}
-                        >
-                          <Eye className="mr-1 h-3.5 w-3.5" />
-                          View
-                        </Button>
+                    <TableCell className="text-center">{a.responsibleTeam}</TableCell>
+                    <TableCell className="text-center">{a.assetRating}</TableCell>
+                    <TableCell className="text-center">{formatMoney(a.assetCost)}</TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-1">
+                        <EditAssetButton asset={a} onOpenChange={setEditAsset} />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                           aria-label={`Delete ${a.assetName}`}
-                          onClick={() => setDeleteTarget(a)}
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(a) }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -183,13 +243,45 @@ export function AssetTable({ assets, loading, error }) {
           </Table>
         </div>
         {!loading && filtered.length === 0 && (
-          <p className="border-t border-border p-6 text-center text-sm text-muted-foreground">
+          <p className="border-t p-6 text-center text-sm text-muted-foreground">
             No assets match your filters.
           </p>
         )}
       </div>
 
+      {!loading && filtered.length > PAGE_SIZE && (
+        <div className="flex items-center justify-between px-4 font-mono text-sm">
+          <span className="pl-2 text-muted-foreground">
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="px-2 text-muted-foreground">{page} / {totalPages}</span>
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <AssetForm open={createOpen} onOpenChange={setCreateOpen} />
+      <AssetForm
+        open={!!editAsset}
+        onOpenChange={(open) => !open && setEditAsset(null)}
+        editAsset={editAsset}
+      />
       <AssetDetail
         asset={detailAsset}
         open={!!detailAsset}
@@ -197,7 +289,7 @@ export function AssetTable({ assets, loading, error }) {
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <AlertDialogContent className="panel-glow border-border">
+        <AlertDialogContent className="panel-glow border-border font-mono">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete asset?</AlertDialogTitle>
             <AlertDialogDescription>

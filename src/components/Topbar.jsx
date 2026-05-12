@@ -17,16 +17,6 @@ export function Topbar({ title = 'Dashboard' }) {
         </MobileNav>
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <nav
-          className="flex items-center gap-1 text-xs text-muted-foreground"
-          aria-label="Breadcrumb"
-        >
-          <Link to="/" className="hover:text-foreground">
-            Home
-          </Link>
-          <ChevronRight className="h-3 w-3 shrink-0" />
-          <span className="font-medium text-foreground">{title}</span>
-        </nav>
         <h1 className="truncate font-mono text-lg font-semibold tracking-tight text-foreground">
           {title}
         </h1>

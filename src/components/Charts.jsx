@@ -10,14 +10,15 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  Legend,
 } from 'recharts'
 
-const EMERALD = ['#022c22', '#064e3b', '#047857', '#059669', '#10b981', '#34d399', '#6ee7b7']
+const EMERALD = ['#059669', '#10b981', '#047857', '#34d399', '#6ee7b7', '#065f46', '#22c55e']
 
 function ChartCard({ title, children, className = '' }) {
   return (
     <div
-      className={`panel-glow flex min-h-[280px] flex-col rounded-lg border border-border bg-card p-4 ${className}`}
+      className={`panel-glow flex min-h-[280px] flex-col rounded-lg bg-card p-4 ${className}`}
     >
       <h3 className="mb-2 font-mono text-sm font-semibold text-foreground">{title}</h3>
       <div className="min-h-[220px] flex-1">{children}</div>
@@ -81,13 +82,18 @@ export function Charts({ assets }) {
         ) : (
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
+              <Legend
+                wrapperStyle={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-foreground)', backgroundColor: 'var(--color-muted)', padding: '4px 8px', borderRadius: '6px' }}
+              />
               <Tooltip
-                formatter={(value) => [value, 'Count']}
+                formatter={(value, name) => [value, name]}
                 contentStyle={{
                   backgroundColor: 'var(--color-card)',
                   border: '1px solid var(--color-border)',
                   borderRadius: '8px',
+                  color: 'var(--color-foreground)',
                 }}
+                itemStyle={{ color: 'var(--color-muted-foreground)' }}
               />
               <Pie
                 data={pieData}
@@ -124,10 +130,12 @@ export function Charts({ assets }) {
               />
               <Tooltip
                 formatter={(v) => [v, 'Assets']}
+                labelFormatter={(label) => label}
                 contentStyle={{
                   backgroundColor: 'var(--color-card)',
                   border: '1px solid var(--color-border)',
                   borderRadius: '8px',
+                  color: 'var(--color-foreground)',
                 }}
               />
               <Bar dataKey="count" fill="#10b981" radius={[0, 4, 4, 0]} />
@@ -140,17 +148,17 @@ export function Charts({ assets }) {
         {topCost.length === 0 ? (
           <EmptyChart />
         ) : (
-          <div className="flex h-full flex-col overflow-hidden">
-            <table className="w-full text-xs">
+          <div className="flex h-full flex-col overflow-hidden pt-8">
+            <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="pb-2 text-left font-mono font-medium text-muted-foreground">Asset</th>
-                  <th className="pb-2 text-right font-mono font-medium text-muted-foreground">Cost</th>
+                <tr className="border-b border-border/50">
+                  <th className="pb-2 text-left font-medium text-muted-foreground">Asset</th>
+                  <th className="pb-2 text-right font-medium text-muted-foreground">Cost</th>
                 </tr>
               </thead>
               <tbody>
                 {topCost.map((item, i) => (
-                  <tr key={i} className="border-b border-border last:border-0">
+                  <tr key={i} className="border-b border-border/50 last:border-0">
                     <td className="py-2 pr-4 text-foreground" title={item.fullName}>{item.name}</td>
                     <td className="py-2 text-right font-mono text-foreground">{currency(item.cost)}</td>
                   </tr>
