@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  --radius-lg: 0.5rem;
+  --radius-md: calc(var(--radius-lg) - 2px);
+  --radius-sm: calc(var(--radius-lg) - 4px);
+
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #10b981;
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
+  --color-primary: #10b981;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-accent: #ecfdf5;
+  --color-accent-foreground: #065f46;
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #fef2f2;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+}
+
+.dark {
+  --color-border: #2a2a2a;
+  --color-input: #2a2a2a;
+  --color-ring: #10b981;
+  --color-background: #0f0f0f;
+  --color-foreground: #e2e8f0;
+  --color-primary: #10b981;
+  --color-primary-foreground: #0f0f0f;
+  --color-secondary: #1a1a1a;
+  --color-secondary-foreground: #e2e8f0;
+  --color-muted: #222222;
+  --color-muted-foreground: #94a3b8;
+  --color-accent: #064e3b;
+  --color-accent-foreground: #a7f3d0;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fef2f2;
+  --color-card: #1a1a1a;
+  --color-card-foreground: #e2e8f0;
+  --color-popover: #222222;
+  --color-popover-foreground: #e2e8f0;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .panel-glow {
+    box-shadow:
+      0 1px 3px rgba(15, 23, 42, 0.06),
+      0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+  .dark .panel-glow {
+    box-shadow:
+      0 0 0 1px #10b98120,
+      0 4px 24px #10b98110;
+  }
+}
