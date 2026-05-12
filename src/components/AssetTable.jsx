@@ -288,14 +288,8 @@ export function AssetTable({ assets, loading, error }) {
         </Button>
       </div>
 
-      <div className="panel-glow rounded-lg bg-card">
-        <div
-          className={cn(
-            '-mx-1 touch-pan-x overflow-x-auto overscroll-x-contain px-1 transition-opacity duration-200 [-webkit-overflow-scrolling:touch] sm:mx-0 sm:px-0',
-            filterRefreshing && 'opacity-50',
-          )}
-        >
-          <Table className="min-w-[44rem] font-mono xl:min-w-0">
+      <div className="panel-glow overflow-hidden rounded-lg bg-card">
+          <Table className="w-full border-collapse font-mono xl:min-w-0">
             <TableHeader>
               <TableRow>
                 <TableHead className="text-center">Asset name</TableHead>
@@ -373,15 +367,15 @@ export function AssetTable({ assets, loading, error }) {
                     className="cursor-pointer touch-manipulation active:bg-muted/60"
                     onClick={() => setDetailAsset(a)}
                   >
-                    <TableCell className="text-center font-medium">{a.assetName}</TableCell>
-                    <TableCell className="text-center">{a.serialNumber}</TableCell>
-                    <TableCell className="text-center">{a.assetCategory}</TableCell>
+                    <TableCell className="text-center font-medium truncate max-w-[160px]" title={a.assetName}>{a.assetName}</TableCell>
+                    <TableCell className="text-center truncate max-w-[120px]" title={a.serialNumber}>{a.serialNumber}</TableCell>
+                    <TableCell className="text-center truncate max-w-[100px]">{a.assetCategory}</TableCell>
                     <TableCell className="text-center">
                       <CriticalityBadge value={a.assetCriticality} />
                     </TableCell>
-                    <TableCell className="text-center">{a.responsibleTeam}</TableCell>
-                    <TableCell className="text-center">{a.assetRating}</TableCell>
-                    <TableCell className="text-center">{formatMoney(a.assetCost)}</TableCell>
+                    <TableCell className="text-center truncate max-w-[110px]">{a.responsibleTeam}</TableCell>
+                    <TableCell className="text-center truncate max-w-[80px]">{a.assetRating}</TableCell>
+                    <TableCell className="text-center truncate max-w-[100px]">{formatMoney(a.assetCost)}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center gap-1">
                         <EditAssetButton asset={a} onOpenChange={setEditAsset} />
@@ -401,7 +395,6 @@ export function AssetTable({ assets, loading, error }) {
                 ))}
             </TableBody>
           </Table>
-        </div>
         {!showBodySkeleton && filtered.length === 0 && (
           <p className="border-t p-6 text-center text-sm text-muted-foreground">
             No assets match your filters.

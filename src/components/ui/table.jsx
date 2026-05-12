@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 
 function Table({ className, ...props }) {
   return (
-    <div className="relative w-full min-w-0 touch-pan-x">
+    <div className="relative w-full min-w-0 overflow-x-auto">
       <table className={cn('w-full caption-bottom text-sm', className)} {...props} />
     </div>
   )
