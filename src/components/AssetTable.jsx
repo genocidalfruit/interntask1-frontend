@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
@@ -66,6 +66,18 @@ function CriticalityBadge({ value }) {
   return <Badge variant={variant}>{value}</Badge>
 }
 
+function TableSkeletonRows({ rows = 5 }) {
+  return Array.from({ length: rows }).map((_, i) => (
+    <TableRow key={`sk-${i}`}>
+      {Array.from({ length: 8 }).map((__, j) => (
+        <TableCell key={j}>
+          <Skeleton className="mx-auto h-4 w-full max-w-[120px]" />
+        </TableCell>
+      ))}
+    </TableRow>
+  ))
+}
+
 export function AssetTable({ assets, loading, error }) {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
@@ -80,6 +92,29 @@ export function AssetTable({ assets, loading, error }) {
   const PAGE_SIZE = 5
   const [sortBy, setSortBy] = useState(null)
   const [sortDir, setSortDir] = useState('asc')
+  const [filterRefreshing, setFilterRefreshing] = useState(false)
+  const prevFilterKeyRef = useRef(null)
+
+  const filterDepsKey = useMemo(
+    () => `${search}\0${filterCategory}\0${filterCriticality}\0${filterTeam}`,
+    [search, filterCategory, filterCriticality, filterTeam],
+  )
+
+  useEffect(() => {
+    if (loading) return
+    if (prevFilterKeyRef.current === null) {
+      prevFilterKeyRef.current = filterDepsKey
+      return
+    }
+    if (prevFilterKeyRef.current === filterDepsKey) return
+    prevFilterKeyRef.current = filterDepsKey
+    setFilterRefreshing(true)
+    const id = window.setTimeout(() => setFilterRefreshing(false), 280)
+    return () => window.clearTimeout(id)
+  }, [filterDepsKey, loading])
+
+  const showBodySkeleton = loading || filterRefreshing
+  const tableBodyContentKey = `${filterDepsKey}|${page}|${sortBy ?? ''}|${sortDir}`
 
   const filtersActive =
     filterCategory !== 'all' || filterCriticality !== 'all' || filterTeam !== 'all'
@@ -251,7 +286,12 @@ export function AssetTable({ assets, loading, error }) {
       </div>
 
       <div className="panel-glow rounded-lg bg-card">
-        <div className="overflow-x-auto">
+        <div
+          className={cn(
+            'overflow-x-auto transition-opacity duration-200',
+            filterRefreshing && 'opacity-50',
+          )}
+        >
           <Table className="font-mono">
             <TableHeader>
               <TableRow>
@@ -305,18 +345,15 @@ export function AssetTable({ assets, loading, error }) {
                 <TableHead className="w-[110px] text-center pr-4">Actions</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {loading &&
-                Array.from({ length: 6 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 8 }).map((__, j) => (
-                      <TableCell key={j}>
-                        <Skeleton className="h-4 w-full max-w-[120px]" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              {!loading &&
+            <TableBody
+              key={showBodySkeleton ? 'skeleton' : tableBodyContentKey}
+              className={cn(
+                !showBodySkeleton &&
+                  'motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200',
+              )}
+            >
+              {showBodySkeleton && <TableSkeletonRows rows={PAGE_SIZE} />}
+              {!showBodySkeleton &&
                 paginated.map((a) => (
                   <TableRow key={a._id} className="cursor-pointer" onClick={() => setDetailAsset(a)}>
                     <TableCell className="text-center font-medium">{a.assetName}</TableCell>
@@ -348,14 +385,14 @@ export function AssetTable({ assets, loading, error }) {
             </TableBody>
           </Table>
         </div>
-        {!loading && filtered.length === 0 && (
+        {!showBodySkeleton && filtered.length === 0 && (
           <p className="border-t p-6 text-center text-sm text-muted-foreground">
             No assets match your filters.
           </p>
         )}
       </div>
 
-      {!loading && filtered.length > PAGE_SIZE && (
+      {!loading && !filterRefreshing && filtered.length > PAGE_SIZE && (
         <div className="flex items-center justify-between px-4 font-mono text-sm">
           <span className="pl-2 text-muted-foreground">
             Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
