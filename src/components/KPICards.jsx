@@ -55,11 +55,16 @@ export function KPICards({ loading, kpis }) {
   if (loading) {
     return (
       <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-        <Card className="panel-glow border-border">
-          <CardContent className="flex h-36 items-center justify-center">
-            <Skeleton className="h-5 w-48" />
+        <div className="min-w-0">
+          <CardContent className="flex min-h-[9rem] flex-col items-start justify-end gap-2 px-1 pb-4 pt-6 sm:h-36 sm:justify-start sm:pt-12">
+            <p className="font-mono text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+              Welcome!
+            </p>
+            <p className="font-mono text-xs leading-snug text-muted-foreground sm:text-sm">
+              Loading your data...
+            </p>
           </CardContent>
-        </Card>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
           {items.map((item) => (
             <Card key={item.key} className="panel-glow overflow-hidden border-border">

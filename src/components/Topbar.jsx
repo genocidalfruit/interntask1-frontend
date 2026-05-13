@@ -16,7 +16,7 @@ export function Topbar({ title = 'Dashboard' }) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-11 w-11 shrink-0 sm:h-9 sm:w-9 pt-3"
+        className="h-11 w-11 shrink-0 sm:h-9 sm:w-9"
         onClick={toggleTheme}
         aria-label="Toggle theme"
       >
