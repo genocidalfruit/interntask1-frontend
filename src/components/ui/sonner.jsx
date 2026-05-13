@@ -9,9 +9,9 @@ export function Toaster() {
     <Sonner
       theme={theme}
       richColors
-      closeButton
       position={narrow ? 'top-center' : 'top-right'}
       offset={narrow ? 'max(1rem, env(safe-area-inset-top))' : '1rem'}
+      duration={2000}
       toastOptions={{ className: 'touch-manipulation' }}
     />
   )
